@@ -1,19 +1,27 @@
-export type PaymentMethod = 'card' | 'cash';
-
-export type FormErrors = Partial<Record<keyof IOrderForm, string>>;
-
-export interface IProduct {
-	id: string;
-	description: string;
-	index?: number;
-	image?: string;
-	title: string;
-	category: string;
-	price: number | null;
+export interface IFormValidationState {
+	valid: boolean;
+	errors: string[];
 }
 
-export interface IOrderForm {
-	payment: PaymentMethod;
+export interface IPageDisplayData {
+	counter: number;
+	catalog: HTMLElement[];
+	locked: boolean;
+}
+
+export interface IApplicationStateConfig {
+	catalog: IItemProductStructure[];
+	basket: string;
+	order: IFormOrderStructure | null;
+}
+
+export interface IModalPopup {
+	content: HTMLElement;
+}
+
+export type PaymentOption = 'card' | 'cash';
+export interface IFormOrderStructure {
+	payment: PaymentOption;
 	email: string;
 	phone: string;
 	address: string;
@@ -21,71 +29,72 @@ export interface IOrderForm {
 	items: string[];
 }
 
-export interface IBasketCard {
-	title: string;
-	price: number;
-}
-
-export interface IPageData {
-	counter: number;
-	catalog: HTMLElement[];
-	locked: boolean;
-}
-
-export interface IBasketData {
+export interface ICartItemData {
 	items: HTMLElement[];
 	total: number;
 }
 
-export interface IAppStateModel {
-	catalog: IProduct[];
-	basket: string[];
-	order: IOrderForm | null;
-}
-
-export interface IModal {
-	content: HTMLElement;
-}
-
-export interface ICardActions {
+export interface IProductCartHandlers {
 	onClick: (event: MouseEvent) => void;
 }
 
-export interface ITotalItems<T> {
+export interface ITotalElementList<T> {
 	total: number;
 	items: T[];
 }
 
-export interface IOrderResult {
+export interface ICartElementData {
+	title: string;
+	price: number;
+}
+
+export interface IItemProductStructure {
+	id: string;
+	description: string;
+	image: string;
+	index?: number;
+	title: string;
+	category: string;
+	price: number | null;
+}
+
+export interface IPageContentConfig {
+	counter: number | null;
+	catalog: HTMLElement[];
+	locked: boolean;
+}
+
+export interface IOrderTransactionResult {
 	id: string;
 	total: number;
 }
 
-export interface ISuccess {
-	total: number;
-}
-
-export interface ISuccessActions {
+export interface IOperationHandlers {
 	onClick: () => void;
 }
 
-export interface IContactsOrder {
+export interface IOperationResultSummary {
+	total: number;
+}
+
+export interface ICustomerDetails {
 	email: string;
 	phone: string;
 }
 
-export interface IOrderAddress {
-	payment: PaymentMethod;
+export interface IOrderDeliveryDetails {
+	payment: PaymentOption;
 	address: string;
 }
 
-export interface ILarekApi {
-	getProductList: () => Promise<IProduct[]>;
-	getProductItem: (id: string) => Promise<IProduct>;
-	orderProduct: (order: IOrderForm) => Promise<IOrderResult>;
-}
+export type IFormValidationMessages = Partial<
+	Record<keyof IFormOrderStructure, string>
+>;
 
-export interface IFormState {
-	valid: boolean;
-	errors: string[];
+export interface IVendorAPIInterface {
+	getProductList: () => Promise<IItemProductStructure[]>;
+	getProductItem: (id: string) => Promise<IItemProductStructure>;
+	orderProduct: (
+		order: IFormOrderStructure
+	) => Promise<IOrderTransactionResult>;
 }

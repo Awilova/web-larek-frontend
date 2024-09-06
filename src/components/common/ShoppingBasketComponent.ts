@@ -1,17 +1,18 @@
 import { Component } from '../base/Component';
-import { createElement, ensureElement } from '../../utils/utils';
 import { EventEmitter } from '../base/events';
-import { CATALOG_VALUE } from '../../index';
-import { IBasketData } from '../../types';
+import { VALUE_CATALOG } from '../cards/ProductCardComponent';
+import { ICartItemData } from '../../types';
+import { ensureElement } from '../../utils/utils';
 
-export class Basket extends Component<IBasketData> {
+// Класс Basket представляет компонент корзины на странице
+
+export class Basket extends Component<ICartItemData> {
 	protected _itemList: HTMLElement;
 	protected _totalPrice: HTMLElement;
 	protected _orderButton: HTMLElement;
 
 	constructor(container: HTMLElement, protected events: EventEmitter) {
 		super(container);
-
 		this._itemList = ensureElement<HTMLElement>(
 			'.basket__list',
 			this.container
@@ -29,21 +30,13 @@ export class Basket extends Component<IBasketData> {
 	set items(items: HTMLElement[]) {
 		if (items.length) {
 			this._itemList.replaceChildren(...items);
-			this.setDisabled(this._orderButton, false);
-		} else {
-			this._itemList.replaceChildren(
-				createElement<HTMLParagraphElement>('p', {
-					textContent: 'Корзина пуста',
-				})
-			);
-			this.setDisabled(this._orderButton, true);
 		}
 	}
 
 	set total(total: number) {
 		this.setText(
 			this._totalPrice,
-			total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + CATALOG_VALUE
+			total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + VALUE_CATALOG
 		);
 	}
 }
