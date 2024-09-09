@@ -1,25 +1,26 @@
-import { Component } from '../base/Component';
+import { createElement, ensureElement } from '../../utils/utils';
 import { EventEmitter } from '../base/events';
-import { VALUE_CATALOG } from '../cards/ProductCardComponent';
+import { Component } from '../base/Component';
+import { currency } from '../../utils/constants';
 import { ICartItemData } from '../../types';
-import { ensureElement } from '../../utils/utils';
 
-// Класс Basket представляет компонент корзины на странице
-
-export class Basket extends Component<ICartItemData> {
-	protected _itemList: HTMLElement;
-	protected _totalPrice: HTMLElement;
+export class ShoppingBasketComponent extends Component<ICartItemData> {
+	protected _itemCatalog: HTMLElement;
+	protected _totalNumber: HTMLElement;
 	protected _orderButton: HTMLElement;
 
 	constructor(container: HTMLElement, protected events: EventEmitter) {
 		super(container);
-		this._itemList = ensureElement<HTMLElement>(
+
+		this._itemCatalog = ensureElement<HTMLElement>(
 			'.basket__list',
 			this.container
 		);
-		this._totalPrice = ensureElement<HTMLElement>('.basket__price', container);
+		this._totalNumber = this.container.querySelector('.basket__price');
 		this._orderButton = this.container.querySelector('.basket__button');
 
+		if (this._orderButton) {
+		}
 		this._orderButton.addEventListener('click', () => {
 			events.emit('order:open');
 		});
@@ -29,14 +30,19 @@ export class Basket extends Component<ICartItemData> {
 
 	set items(items: HTMLElement[]) {
 		if (items.length) {
-			this._itemList.replaceChildren(...items);
+			this._itemCatalog.append(...items);
+			this.setDisabled(this._orderButton, false);
+		} else {
+			this._itemCatalog.append(
+				createElement<HTMLParagraphElement>('p', {
+					textContent: 'Корзина пуста',
+				})
+			);
+			this.setDisabled(this._orderButton, true);
 		}
 	}
 
 	set total(total: number) {
-		this.setText(
-			this._totalPrice,
-			total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + VALUE_CATALOG
-		);
+		this._totalNumber.textContent = total.toLocaleString() + currency;
 	}
 }

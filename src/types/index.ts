@@ -34,11 +34,11 @@ export interface ICartItemData {
 	total: number;
 }
 
-export interface IProductCartHandlers {
+export interface IProductCardHandlers {
 	onClick: (event: MouseEvent) => void;
 }
 
-export interface ITotalElementList<T> {
+export interface ITotalElementsList<T> {
 	total: number;
 	items: T[];
 }
@@ -49,13 +49,14 @@ export interface ICartElementData {
 }
 
 export interface IItemProductStructure {
-	id: string;
-	description: string;
+	id?: string;
+	description?: string;
 	image: string;
 	index?: number;
 	title: string;
 	category: string;
 	price: number | null;
+	button?: string;
 }
 
 export interface IPageContentConfig {

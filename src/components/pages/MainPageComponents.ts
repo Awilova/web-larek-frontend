@@ -1,7 +1,8 @@
+import { IPageContentConfig as IPageDataInterface } from '../../types';
 import { ensureElement as getElementFromUtils } from '../../utils/utils';
 import { Component as BaseComponent } from '../base/Component';
 import { IEvents as IEventsInterface } from '../base/events';
-import { IPageContentConfig as IPageDataInterface } from '../../types';
+
 
 export class Page extends BaseComponent<IPageDataInterface> {
 	protected _counter: HTMLElement | null;
@@ -12,27 +13,17 @@ export class Page extends BaseComponent<IPageDataInterface> {
 	constructor(container: HTMLElement, protected events: IEventsInterface) {
 		super(container);
 
-		this._counter = getElementFromUtils<HTMLElement>(
-			'.header__basket-counter',
-			container
-		) as HTMLElement | null;
-		this._catalog = getElementFromUtils<HTMLElement>(
-			'.gallery',
-			container
-		) as HTMLElement | null;
-		this._wrapper = getElementFromUtils<HTMLElement>(
-			'.page__wrapper',
-			container
-		) as HTMLElement | null;
-		this._basket = getElementFromUtils<HTMLElement>(
-			'.header__basket',
-			container
-		) as HTMLElement | null;
+		this._basket = getElementFromUtils<HTMLElement>('.header__basket', container) as HTMLElement | null;
+		this._counter = getElementFromUtils<HTMLElement>('.header__basket-counter', container) as HTMLElement | null;
+		this._catalog = getElementFromUtils<HTMLElement>('.gallery', container) as HTMLElement | null;
+		this._wrapper = getElementFromUtils<HTMLElement>('.page__wrapper', container) as HTMLElement | null;
+
 
 		if (this._basket) {
 			this._basket.addEventListener('click', this.handleBasketClick.bind(this));
 		}
 	}
+
 	private handleBasketClick(): void {
 		if (this.container) {
 			this.events.emit('basket:open', this.container);
@@ -44,16 +35,15 @@ export class Page extends BaseComponent<IPageDataInterface> {
 			this.setText(this._counter, String(value));
 		}
 	}
+	set catalog(items: HTMLElement[]) {
+		if (this._catalog) {
+			this._catalog.replaceChildren(...items);
+		}
+	}
 
-    set catalog(items: HTMLElement[]) {
-        if (this._catalog) {
-            this._catalog.replaceChildren(...items);
-        }
-    }
-
-    set locked(value: boolean) {
-        if (this._wrapper) {
-            this._wrapper.classList.toggle('page__wrapper_locked', value);
-        }
-    }
+	set locked(value: boolean) {
+		if (this._wrapper) {
+			this._wrapper.classList.toggle('page__wrapper_locked', value);
+		}
+	}
 }

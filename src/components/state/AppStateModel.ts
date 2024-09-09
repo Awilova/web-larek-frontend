@@ -3,11 +3,10 @@ import {
 	PaymentOption as PaymentType,
 	IFormValidationMessages as FormErrorsType,
 	ICustomerDetails as ContactsOrderType,
-	IFormOrderStructure as OrderFormType,
-	IItemProductStructure as ProductType,
 	IApplicationStateConfig as AppStateType,
-} from '../../types/index';
-
+	IItemProductStructure as ProductType,
+	IFormOrderStructure as OrderFormType,
+} from '../../types';
 import { IEvents } from '../base/events';
 
 export class Product extends BaseModel<ProductType> {
@@ -20,7 +19,6 @@ export class Product extends BaseModel<ProductType> {
 
 	constructor(data: Partial<ProductType>, events: IEvents) {
 		super(data, events);
-
 		this.id = data.id || '';
 		this.description = data.description || '';
 		this.image = data.image || '';
@@ -49,7 +47,14 @@ export class AppStateModel extends BaseModel<AppStateType> {
 	formErrors: FormErrorsType = {};
 
 	constructor(data: Partial<AppStateType>, events: IEvents) {
-		super(data, events);
+		super(data, events); 
+	}
+
+	deleteFromBasket(id: string): void {
+		if (id) {
+			this.basket = this.basket.filter((item) => item.id !== id);
+			this.emitChanges('itemsBasket:changed');
+		}
 	}
 
 	putInBasket(item: ProductType): void {
@@ -59,12 +64,6 @@ export class AppStateModel extends BaseModel<AppStateType> {
 		}
 	}
 
-	deleteFromBasket(id: string): void {
-		if (id) {
-			this.basket = this.basket.filter((item) => item.id !== id);
-			this.emitChanges('itemsBasket:changed');
-		}
-	}
 
 	defaultOrder(): void {
 		this.order = {
@@ -79,7 +78,7 @@ export class AppStateModel extends BaseModel<AppStateType> {
 
 	clearBasket(): void {
 		this.basket = [];
-		this.emitChanges('itemsBasket:changed');
+		this.emitChanges('itemBasket:changed');
 		this.defaultOrder();
 	}
 
@@ -90,90 +89,90 @@ export class AppStateModel extends BaseModel<AppStateType> {
 	setCatalog(items: ProductType[]): void {
 		if (Array.isArray(items)) {
 			this.catalog = items.map((item) => new Product(item, this.events));
-			this.emitChanges('item:changed', { catalog: this.catalog });
+			this.emitChanges('items:changed', { catalog: this.catalog });
 		}
 	}
 
-    fullBasket(): ProductType[] {
-        return [...this.basket];
-    }
+	fullBasket(): ProductType[] {
+		return [...this.basket];
+	}
 
-    checkBasket(item: ProductType): boolean {
-        return item ? this.basket.some((basketItem) => basketItem.id === item.id) : false;
-    }
+	checkBasket(item: ProductType): boolean {
+		return item ? this.basket.some((basketItem) => basketItem.id === item.id) : false;
+	}
 
-    setPreview(item: Product): void {
-        if (item && item.id) {
-            this.preview = item.id;
-            this.emitChanges('preview:changed', item);
-        }
-    }
+	setPreview(item: Product): void {
+		if (item && item.id) {
+			this.preview = item.id;
+			this.emitChanges('preview:changed', item);
+		}
+	}
 
-    setOrder(): void {
-        this.order.total = this.getTotal();
-        this.order.items = this.fullBasket().map((item) => item.id);
-    }
+	setOrder(): void {
+		this.order.total = this.getTotal();
+		this.order.items = this.fullBasket().map((item) => item.id);
+	}
 
-    checkPayment(orderPayment: PaymentType): void {
-        this.order.payment = orderPayment;
-        this.validateOrderForm();
-    }
+	checkPayment(orderPayment: PaymentType): void {
+		this.order.payment = orderPayment;
+		this.validateOrderPayment();
+	}
 
-    checkAddress(orderAddress: string): void {
-        this.order.address = orderAddress;
-        this.validateOrderPayment();
-    }
+	checkAddress(orderAddress: string): void {
+		this.order.address = orderAddress;
+		this.validateOrderPayment();
+	}
 
-    checkEmail(orderEmail: string): void {
-        this.order.email = orderEmail;
-        this.validateOrderForm();
-    }
+	checkEmail(orderEmail: string): void {
+		this.order.email = orderEmail;
+		this.validateOrderForm();
+	}
 
-    checkPhone(orderPhone: string): void {
-        this.order.phone = orderPhone;
-        this.validateOrderForm();
-    }
+	checkPhone(orderPhone: string): void {
+		this.order.phone = orderPhone;
+		this.validateOrderForm();
+	}
 
-    validateOrderPayment(): boolean {
-        const errors: FormErrorsType = {};
-        if (!this.order.payment) {
-            errors.payment = 'Необходимо указать способ оплаты';
-        }
+	validateOrderPayment(): boolean {
+		const errors: FormErrorsType = {};
+		if (!this.order.payment) {
+			errors.payment = 'Необходимо указать способ оплаты';
+		}
+		if (!this.order.address) {
+			errors.address = 'Необходимо указать адрес';
+		}
+		this.formErrors = errors;
 
-        if (!this.order.address) {
-            errors.address = 'Необходимо указать адрес доставки';
-        }
-        this.formErrors = errors;
+		if (Object.keys(errors).length > 0) {
+			console.log('Ошибки валидации оплаты или адреса:', errors); // Ошибки только в консоль
+		}
 
-        if (Object.keys(errors).length >0) {
-console.log('Ошибки валидации оплаты или адреса', errors);
-        }
-        this.events.emit('formAddressErrors:change', this.formErrors);
-        return Object.keys(errors).length === 0;
+		this.events.emit('formAddresErrors:change', this.formErrors);
+		return Object.keys(errors).length === 0;
+	}
 
-    }
-    
-    validateOrderForm(): boolean {
-        const errors: FormErrorsType = {};
-        if (!this.order.email) {
-            errors.email = 'Необходимо указать email';
-        }
-        if (!this.order.phone) {
-            errors.phone = 'Необходимо указать телефон';
-        }
-        this.formErrors = errors;
+	validateOrderForm(): boolean {
+		const errors: FormErrorsType = {};
+		if (!this.order.email) {
+			errors.email = 'Необходимо указать email';
+		}
+		if (!this.order.phone) {
+			errors.phone = 'Необходимо указать телефон';
+		}
+		this.formErrors = errors;
 
-        if (Object.keys(errors).length > 0) {
-            console.log('Ошибки валидации контактных данных', errors);
-        }
-        this.events.emit('formContactErrors:change', this.formErrors);
-        return Object.keys(errors).length === 0;
-    }
+		if (Object.keys(errors).length > 0) {
+			console.log('Ошибки валидации контактных данных:', errors); // Ошибки только в консоль
+		}
 
-    setContactField(field: keyof ContactsOrderType, value: string): void {
-        if (field && value) {
-            this.order[field] = value;
-            this.validateOrderForm();
-        }
-    }
+		this.events.emit('formContactErrors:change', this.formErrors);
+		return Object.keys(errors).length === 0;
+	}
+
+	setContactField(field: keyof ContactsOrderType, value: string): void {
+		if (field && value) {
+			this.order[field] = value;
+			this.validateOrderForm();
+		}
+	}
 }

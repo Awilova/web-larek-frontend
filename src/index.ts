@@ -2,19 +2,20 @@ import './scss/styles.scss';
 import { ProductApiService as ApiService } from './components/api/ProductApiService';
 import { API_URL as ApiUrl, CDN_URL as CdnUrl } from './utils/constants';
 import { EventEmitter as EventManager } from './components/base/events';
-import { AppStateModel as StateModel,
-    CatalogChangeEvent as ProductCatalogChangeEvent,
-    Product as ProductItem
- } from './components/state/AppStateModel';
+import {
+	AppStateModel as StateModel,
+	CatalogChangeEvent as ProductCatalogChangeEvent,
+	Product as ProductItem,
+} from './components/state/AppStateModel';
 import { Page as AppPage } from './components/pages/MainPageComponents';
-import { Card as ProductCard } from './components/cards/ProductCardComponent';
+import { ProductCardComponent as ProductCard } from './components/cards/ProductCardComponent';
 import {
 	cloneTemplate as duplicateTemplate,
 	ensureElement as confirmElement,
 } from './utils/utils';
 import { Modal as PopupModal } from './components/common/ModalComponent';
-import { Basket as ShoppingCart } from './components/common/ShoppingBasketComponent';
-import { BasketCardComponent as ShoppingCartCard } from './components/common/ShoppingBasketCardComponent';
+import { ShoppingBasketComponent as ShoppingCart } from './components/common/ShoppingBasketComponent';
+import { ShoppingBasketCardComponent as ShoppingCartCard } from './components/common/ShoppingBasketCardComponent';
 import {
 	ICustomerDetails as OrderContactsInterface,
 	PaymentOption as PaymentType,
@@ -24,21 +25,12 @@ import { ContactsOrder as OrderContacts } from './components/state/ContactOrderC
 import { OrderForm as OrderFormComponent } from './components/form/OrderFormComponent';
 import { SuccessComponent as SuccessModal } from './components/common/SuccessModalComponent';
 
-// Создаём экземпляры событий и  API
 
 const eventManager = new EventManager();
 const apiService = new ApiService(CdnUrl, ApiUrl);
 
-eventManager.onAll(logEventData);
-
-function logEventData({ eventName, data }: { eventName: string; data: any }) {
-	console.log(eventName, data);
-}
-
-// Загружаем шаблоны элементов интерфейса
-
 const templates = {
-    success: confirmElement<HTMLTemplateElement>('#success'),
+	success: confirmElement<HTMLTemplateElement>('#success'),
 	catalogCard: confirmElement<HTMLTemplateElement>('#card-catalog'),
 	previewCard: confirmElement<HTMLTemplateElement>('#card-preview'),
 	basketCard: confirmElement<HTMLTemplateElement>('#card-basket'),
@@ -47,10 +39,8 @@ const templates = {
 	contacts: confirmElement<HTMLTemplateElement>('#contacts'),
 };
 
-// Инициализация состояния приложения
 export const applicationState = new StateModel({}, eventManager);
 
-// Создаем экземпляры основных компонентов
 const uiComponents = {
 	page: new AppPage(document.body, eventManager),
 	modal: new PopupModal(
@@ -68,7 +58,6 @@ const uiComponents = {
 	),
 };
 
-// Функция обработки изменений в каталоге товаров
 function handleCatalogChange() {
 	const catalog = applicationState.catalog.map(
 		(item) => new ProductItem(item, eventManager)
@@ -81,7 +70,6 @@ eventManager.on<ProductCatalogChangeEvent>(
 	handleCatalogChange
 );
 
-// Создание карточки товара
 function createProductCard(item: ProductItem) {
 	const productCard = new ProductCard(
 		'card',
@@ -97,37 +85,33 @@ function createProductCard(item: ProductItem) {
 		price: item.price,
 	});
 }
-// Загрузка списка товаров с сервера
+
 async function loadProductList() {
-    const basketCount = document.querySelector('.header__basket-counter');
-    try {
-        const products = await apiService.getProductList();
-        applicationState.setCatalog(products);
-        basketCount.textContent = '0';
-    } catch (error) {
-        console.error('Ошибка при загрузке списка товаров',error);
-    }
+	const basketCount = document.querySelector('.header__basket-counter');
+	try {
+		const products = await apiService.getProductList();
+		applicationState.setCatalog(products);
+		basketCount.textContent = '0';
+	} catch (err) {
+		console.error('Ошибка при загрузке списка товаров:', err);
+	}
 }
 loadProductList();
 
-
-// Обработка выбора товара
 eventManager.on('card:select', (item: ProductItem) => {
 	applicationState.setPreview(item);
 });
 
-// Обработка изменения превью товара
 eventManager.on('preview:changed', (item: ProductItem) => {
 	item ? renderProductPreview(item) : uiComponents.modal.close();
 });
 
-// Рендеринг превью товара в модальном окне
 function renderProductPreview(item: ProductItem) {
 	const productCard = new ProductCard(
 		'card',
 		duplicateTemplate(templates.previewCard),
 		{
-			onClick: () => handleProductAction(item), // Исправлено, удалена двойная стрелочная функция
+			onClick: () => handleProductAction(item), 
 		}
 	);
 	uiComponents.modal.render({
@@ -142,7 +126,6 @@ function renderProductPreview(item: ProductItem) {
 	});
 }
 
-// Функция для обработки добавления или удаления товара
 function handleProductAction(item: ProductItem) {
 	const action = applicationState.checkBasket(item)
 		? 'webproduct:delete'
@@ -150,7 +133,6 @@ function handleProductAction(item: ProductItem) {
 	eventManager.emit(action, item);
 }
 
-// Обработка добавления товара в корзину
 eventManager.on('webproduct:added', (item: ProductItem) => {
 	if (!applicationState.checkBasket(item)) {
 		applicationState.putInBasket(item);
@@ -158,16 +140,13 @@ eventManager.on('webproduct:added', (item: ProductItem) => {
 	}
 });
 
-// Обработка удаления товара из корзины
 eventManager.on('webproduct:delete', (item: ProductItem) => {
 	applicationState.deleteFromBasket(item.id);
 	uiComponents.modal.close();
 });
 
-// Обработка изменений данных в корзине
 eventManager.on('itemsBasket:changed', updateBasketUI);
 
-// Обновление интерфейса корзины
 function updateBasketUI() {
 	const fullBasketItems = applicationState
 		.fullBasket()
@@ -192,19 +171,16 @@ function updateBasketUI() {
 	);
 }
 
-// Функция для удаления товара из корзины
 function removeItemFromBasket(itemId: string) {
 	applicationState.deleteFromBasket(itemId);
 	uiComponents.basket.total = applicationState.getTotal();
 }
 
-// Обработчики для открытия модальных окон
 eventManager.on('basket:open', () =>
 	uiComponents.modal.render({ content: uiComponents.basket.render() })
 );
 eventManager.on('order:open', () => openOrderForm());
 
-// Открытие формы заказа
 function openOrderForm() {
 	uiComponents.orderForm.setButtonClass('');
 	uiComponents.modal.render({
@@ -217,13 +193,11 @@ function openOrderForm() {
 	});
 }
 
-// Обработчики для методов оплаты и отправки заказа
 eventManager.on('payment:changed', (data: { target: PaymentType }) =>
 	applicationState.checkPayment(data.target)
 );
 eventManager.on('order:submit', () => openContactsForm());
 
-// Открытие формы контактов
 function openContactsForm() {
 	uiComponents.modal.render({
 		content: uiComponents.contactForm.render({
@@ -235,7 +209,6 @@ function openContactsForm() {
 	});
 }
 
-// Обработка ошибок валидации формы
 eventManager.on(
 	'formAddresErrors:change',
 	(errors: Partial<OrderAddressInterface>) => {
@@ -271,7 +244,6 @@ eventManager.on('order.address:change', (data: { value: string }) =>
 	applicationState.checkAddress(data.value)
 );
 
-// Обработка отправки формы заказа
 eventManager.on('contacts:submit', async () => {
 	try {
 		applicationState.setOrder();
@@ -282,7 +254,6 @@ eventManager.on('contacts:submit', async () => {
 	}
 });
 
-// Показ сообщения об успешном заказе
 function showSuccessMessage(total: number) {
 	const successMessage = new SuccessModal(
 		duplicateTemplate(templates.success),
@@ -299,7 +270,6 @@ function showSuccessMessage(total: number) {
 	uiComponents.modal.render({ content: successMessage.render({}) });
 }
 
-// Обработка событий модального окна
 eventManager.on('modal:open', () => (uiComponents.page.locked = true));
 eventManager.on('modal:close', () => {
 	uiComponents.page.locked = false;

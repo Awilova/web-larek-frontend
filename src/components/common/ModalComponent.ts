@@ -1,9 +1,8 @@
 import { ensureElement } from '../../utils/utils';
+import { IModalPopup } from '../../types';
 import { Component } from '../base/Component';
 import { IEvents } from '../base/events';
-import { IModalPopup } from '../../types';
 
-// Класс Modal представляет собой компонент для управления модальными окнами
 
 export class Modal extends Component<IModalPopup> {
 	protected _closeButton: HTMLButtonElement;
@@ -12,33 +11,38 @@ export class Modal extends Component<IModalPopup> {
 	constructor(container: HTMLElement, protected events: IEvents) {
 		super(container);
 
-		this.close = this.close.bind(this);
-        this._closeButton = ensureElement<HTMLButtonElement>('.modal__close', container);
-        this._content = ensureElement<HTMLElement>('.modal__content', container);
-        this._closeButton.addEventListener('click', this.close);
-        this.container.addEventListener('click', this.close);
-        this._content.addEventListener('click', (e) => e.stopPropagation());
+		this._closeButton = ensureElement<HTMLButtonElement>(
+			'.modal__close',
+			container
+		);
+		this._content = ensureElement<HTMLElement>('.modal__content', container);
+
+		this._closeButton.addEventListener('click', this.close.bind(this));
+		this.container.addEventListener('click', this.close.bind(this));
+
+		this._content.addEventListener('click', (event) => event.stopPropagation());
 	}
 
-    set content(value: HTMLElement) {
-        this._content.replaceChildren(value);
-    }
+	set content(value: HTMLElement) {
+		this._content.replaceChildren(value);
+	}
 
-    open() {
-        this.container.classList.add('modal_active');
-        this.events.emit('modal:open');
-    }
-    
+	open() {
+		this.container.classList.toggle('modal_active', true);
+		this.events.emit('modal:open');
+	}
+
 	close() {
-		this.container.classList.remove('modal_active');
-		this.content = null;
-		this.events.emit('modal:close', this.container);
+		this.container.classList.toggle('modal_active', false);
+		this._content.textContent = '';
+		this.events.emit('modal:close');
 	}
 
-    render(data: IModalPopup): HTMLElement {
-        super.render(data);
-        this.open();
-        return this.container;
-    }
+
+	render(data: IModalPopup): HTMLElement {
+		super.render(data);
+		this.open();
+		return this.container;
+	}
 }
 

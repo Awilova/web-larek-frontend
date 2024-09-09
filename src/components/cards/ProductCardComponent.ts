@@ -1,59 +1,36 @@
+import { IProductCardHandlers as CardActionsType, IItemProductStructure as ProductType } from '../../types/index';
 import { Component as BaseComponent } from '../base/Component';
-import { IItemProductStructure as ProductType } from '../../types/index';
 import { ensureElement as findElement } from '../../utils/utils';
-import { IProductCartHandlers as CardActionType } from '../../types/index';
+import { currency, categories } from '../../utils/constants';
 
-// Постоянные значения
-export const VALUE_CATALOG = ' синапсов';
-export const numberWithSpaces = (value: number) =>
-	value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-export const settings = {};
 
-// Расширение IProduct для включения дополнительных свойств для отображения карточки
-export type CardData = ProductType & {
-	id?: string;
-	description?: string;
-	button?: string;
-};
 
-// Словарь категорий продуктов
-const categoryClasses: Record<string, string> = {
-	другое: '_other',
-	'софт-скил': '_soft',
-	'хард-скил': '_hard',
-	дополнительное: '_additional',
-	кнопка: '_button',
-};
-
-// Класс Card отображает детали продукта в формате карточки.
-
-export class Card extends BaseComponent<CardData> {
+export class ProductCardComponent extends BaseComponent<ProductType> {
+	protected _category: HTMLElement;
 	protected _title: HTMLElement;
 	protected _image: HTMLImageElement;
+	protected _price: HTMLElement;
 	protected _description?: HTMLElement;
 	protected _button?: HTMLButtonElement;
-	protected _price: HTMLElement;
-	protected _category: HTMLElement;
 
 	constructor(
 		blockName: string,
 		container: HTMLElement,
-		actions: CardActionType
+		actions: CardActionsType,
 	) {
 		if (!blockName || !container) {
 			throw new Error('Необходимы blockName и container для инициализации Card.');
 		}
 		super(container);
 
-		// Инициализация свойств
+		this._category = this._findElementSafe<HTMLElement>(`.${blockName}__category`, container);
 		this._title = this._findElementSafe<HTMLElement>(`.${blockName}__title`, container);
 		this._image = this._findElementSafe<HTMLImageElement>(`.${blockName}__image`, container);
+		this._price = this._findElementSafe<HTMLElement>(`.${blockName}__price`, container);
 		this._description = container.querySelector(`.${blockName}__text`) as HTMLElement || null;
 		this._button = container.querySelector(`.${blockName}__button`) as HTMLButtonElement || null;
-		this._price = this._findElementSafe<HTMLElement>(`.${blockName}__price`, container);
-		this._category = this._findElementSafe<HTMLElement>(`.${blockName}__category`, container);
-
-		// Добавляем обработчик событий
+		
+		
 		if (this._button) {
 			this._button.addEventListener('click', actions.onClick);
 		} else {
@@ -63,7 +40,15 @@ export class Card extends BaseComponent<CardData> {
 		}
 	}
 
-	// Методы установки значений
+	set category(value: string) {
+		if (value) {
+			this._setText(this._category, value);
+			const category = categories[value] || '';
+			if (category) {
+				this._category.classList.add('card__category' + category);
+			}
+		}
+	}
 	set title(value: string) {
 		if (value) {
 			this._setText(this._title, value);
@@ -76,32 +61,17 @@ export class Card extends BaseComponent<CardData> {
 		}
 	}
 
-	set description(value: string) {
-		if (value && this._description) {
-			this._setText(this._description, value);
-		}
-	}
-
 	set price(value: number) {
 		if (value == null || isNaN(value)) {
 			this._setText(this._price, 'Бесценно');
 			this._disableButton();
 		} else {
-			this._setText(this._price, `${numberWithSpaces(value)} ${VALUE_CATALOG}`);
+			this._setText(this._price, `${value} ${currency}`);
 		}
 	}
-
-	get price(): number {
-		return Number(this._price.textContent?.replace(/\D/g, '') || 0);
-	}
-
-	set category(value: string) {
-		if (value) {
-			this._setText(this._category, value);
-			const categoryClass = categoryClasses[value] || '';
-			if (categoryClass) {
-				this._category.classList.add('card__category' + categoryClass);
-			}
+	set description(value: string) {
+		if (value && this._description) {
+			this._setText(this._description, value);
 		}
 	}
 
@@ -109,6 +79,10 @@ export class Card extends BaseComponent<CardData> {
 		if (this._button && value) {
 			this._setText(this._button, value);
 		}
+	}
+
+	get price(): number {
+		return Number(this._price.textContent ?? '');
 	}
 
 	// Вспомогательные методы
