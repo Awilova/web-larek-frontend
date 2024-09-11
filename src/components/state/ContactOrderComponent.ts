@@ -4,7 +4,7 @@ import { IEvents as EventsInterface } from '../base/events';
 
 export class ContactsOrder extends BaseForm<ContactsOrderType> {
 	constructor(container: HTMLFormElement, events: EventsInterface) {
-		super(container, events); // Вызов базового конструктора
+		super(container, events);
 	}
 
 	set phone(value: string) {
@@ -22,7 +22,10 @@ export class ContactsOrder extends BaseForm<ContactsOrderType> {
 	}
 
 	private _getInputElement(name: string): HTMLInputElement | null {
-		const inputElement = this.container.elements.namedItem(name) as HTMLInputElement | null;
+		const form = this.container as HTMLFormElement;
+		const inputElement = form.elements.namedItem(
+			name
+		) as HTMLInputElement | null;
 		return inputElement;
 	}
 }

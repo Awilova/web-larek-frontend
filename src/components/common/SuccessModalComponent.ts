@@ -5,8 +5,8 @@ import { currency } from '../../utils/constants';
 
 
 export class SuccessComponent extends BaseComponent<SuccessData> {
-	protected _closeButton: HTMLElement;
-	protected _totalDisplay: HTMLElement;
+	protected closeButtonElement: HTMLElement;
+	protected totalDisplayElement: HTMLElement;
 
 	constructor(container: HTMLElement, actions: SuccessActionsInterface, value: number) {
 		if (!container || !(container instanceof HTMLElement)) {
@@ -22,8 +22,8 @@ export class SuccessComponent extends BaseComponent<SuccessData> {
 		super(container);
 
 		
-		this._closeButton = this._findElementSafe<HTMLElement>('.order-success__close', this.container);
-		this._totalDisplay = this._findElementSafe<HTMLElement>('.order-success__description', this.container);
+		this.closeButtonElement = this._findElementSafely<HTMLElement>('.order-success__close', this.container);
+		this.totalDisplayElement = this._findElementSafely<HTMLElement>('.order-success__description', this.container);
 
 	
 		this._initializeComponent(actions, value);
@@ -33,7 +33,7 @@ export class SuccessComponent extends BaseComponent<SuccessData> {
 	
 	private _initializeComponent(actions: SuccessActionsInterface, value: number): void {
 		if (actions && actions.onClick) {
-			this._closeButton.addEventListener('click', (event) => {
+			this.closeButtonElement.addEventListener('click', (event) => {
 				if (event) {
 					actions.onClick();
 				}
@@ -46,7 +46,7 @@ export class SuccessComponent extends BaseComponent<SuccessData> {
 		if (isNaN(value) || value < 0) {
 			throw new Error('Значение для общей суммы должно быть корректным положительным числом.');
 		}
-		this._setText(this._totalDisplay, `Списано ${value} ${currency}`);
+		this._setText(this.totalDisplayElement, `Списано ${value} ${currency}`);
 	}
 
 	private _setText(element: HTMLElement, text: string): void {
@@ -56,7 +56,7 @@ export class SuccessComponent extends BaseComponent<SuccessData> {
 		element.textContent = text;
 	}
 
-	private _findElementSafe<T extends HTMLElement>(selector: string, context: HTMLElement): T {
+	private _findElementSafely<T extends HTMLElement>(selector: string, context: HTMLElement): T {
 		const element = findElement<T>(selector, context);
 		if (!element) {
 			throw new Error(`Элемент с селектором ${selector} не найден в заданном контексте.`);

@@ -1,22 +1,23 @@
-
 import { IFormValidationState } from '../../types';
 import { ensureElement } from '../../utils/utils';
 import { Component } from '../base/Component';
 import { IEvents } from '../base/events';
 
-
 export class BaseFormComponent<T> extends Component<IFormValidationState> {
-	protected _submit: HTMLButtonElement;
-	protected _errors: HTMLElement;
+	protected submitButton: HTMLButtonElement;
+	protected errorsForm: HTMLElement;
 
 	constructor(protected container: HTMLFormElement, protected events: IEvents) {
 		super(container);
 
-		this._submit = ensureElement<HTMLButtonElement>(
+		this.submitButton = ensureElement<HTMLButtonElement>(
 			'button[type=submit]',
 			this.container
 		) as HTMLButtonElement;
-		this._errors = ensureElement<HTMLElement>('.form__errors', this.container) as HTMLElement;
+		this.errorsForm = ensureElement<HTMLElement>(
+			'.form__errors',
+			this.container
+		) as HTMLElement;
 
 		this.setupEventListeners();
 	}
@@ -40,27 +41,51 @@ export class BaseFormComponent<T> extends Component<IFormValidationState> {
 		this.events.emit(`${this.container.name}:submit`);
 	}
 
-	
 	protected onInputChange(field: keyof T, value: string): void {
-		this.events.emit(`${this.container.name}.${field as string}:change`, { field, value });
+		this.events.emit(`${this.container.name}.${field as string}:change`, {
+			field,
+			value,
+		});
 	}
 
 	set valid(value: boolean) {
-		if (this._submit) {
-			this._submit.disabled = !value;
+		if (this.submitButton) {
+			this.submitButton.disabled = !value;
 		}
 	}
 
 	set errors(value: string) {
-		if (this._errors) {
-			this.setText(this._errors, value);
+		if (this.errorsForm) {
+			this.setText(this.errorsForm, value);
+		} else {
+			console.log(
+				'Элемент ошибки не найден, невозможно установить текст ошибки.'
+			);
 		}
 	}
 
-	render(state: Partial<T> & IFormValidationState) {
+	render(state: Partial<T> & IFormValidationState): HTMLFormElement {
 		const { valid, errors, ...inputs } = state;
 		super.render({ valid, errors });
-		Object.assign(this, inputs);
+
+		const inputValues = inputs as Record<string, any>;
+
+		Object.keys(inputValues).forEach((key) => {
+			const value = inputValues[key];
+			if (typeof value === 'string') {
+				const inputElement = this.container.elements.namedItem(
+					key
+				) as HTMLInputElement | null;
+				if (inputElement) {
+					inputElement.value = value;
+				} else {
+					console.warn(`Элемент с именем ${key} не найден в форме.`);
+				}
+			} else {
+				console.warn(`Некорректное значение для ключа ${key}: ${value}`);
+			}
+		});
+
 		return this.container;
 	}
 }

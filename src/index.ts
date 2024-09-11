@@ -7,13 +7,13 @@ import {
 	CatalogChangeEvent as ProductCatalogChangeEvent,
 	Product as ProductItem,
 } from './components/state/AppStateModel';
-import { Page as AppPage } from './components/pages/MainPageComponents';
+import { MainPageComponents as AppPage } from './components/pages/MainPageComponents';
 import { ProductCardComponent as ProductCard } from './components/cards/ProductCardComponent';
 import {
 	cloneTemplate as duplicateTemplate,
 	ensureElement as confirmElement,
 } from './utils/utils';
-import { Modal as PopupModal } from './components/common/ModalComponent';
+import { ModalComponents as PopupModal } from './components/common/ModalComponent';
 import { ShoppingBasketComponent as ShoppingCart } from './components/common/ShoppingBasketComponent';
 import { ShoppingBasketCardComponent as ShoppingCartCard } from './components/common/ShoppingBasketCardComponent';
 import {
@@ -24,7 +24,6 @@ import {
 import { ContactsOrder as OrderContacts } from './components/state/ContactOrderComponent';
 import { OrderForm as OrderFormComponent } from './components/form/OrderFormComponent';
 import { SuccessComponent as SuccessModal } from './components/common/SuccessModalComponent';
-
 
 const eventManager = new EventManager();
 const apiService = new ApiService(CdnUrl, ApiUrl);
@@ -75,7 +74,7 @@ function createProductCard(item: ProductItem) {
 		'card',
 		duplicateTemplate(templates.catalogCard),
 		{
-			onClick: () => eventManager.emit('card:select', item), // Исправлено, удалена двойная стрелочная функция
+			onClick: () => eventManager.emit('card:select', item),
 		}
 	);
 	return productCard.render({
@@ -111,7 +110,7 @@ function renderProductPreview(item: ProductItem) {
 		'card',
 		duplicateTemplate(templates.previewCard),
 		{
-			onClick: () => handleProductAction(item), 
+			onClick: () => handleProductAction(item),
 		}
 	);
 	uiComponents.modal.render({
@@ -213,13 +212,37 @@ eventManager.on(
 	'formAddresErrors:change',
 	(errors: Partial<OrderAddressInterface>) => {
 		const { payment, address } = errors;
-		uiComponents.orderForm.valid = !payment && !address;
+		uiComponents.orderForm.valid =
+			!payment &&
+			!address &&
+			validatePaymentOption(applicationState.order.payment);
+
 		uiComponents.orderForm.errors = Object.entries(errors)
 			.filter(([, value]) => !!value)
-			.map(([key]) => key)
+			.map(([key]) => {
+				switch (key) {
+					case 'payment':
+						return 'Ошибка: способ оплаты не выбран. Пожалуйста, выберите допустимый способ оплаты';
+					case 'address':
+						return 'Ошибка: адрес доставки не указан. Пожалуйста, укажите корректный адрес доставки.';
+					default:
+						return 'Неизвестная ошибка. Проверьте введенные данные и попробуйте снова.';
+				}
+			})
 			.join(', ');
 	}
 );
+
+function validatePaymentOption(payment: PaymentType | null): boolean {
+	if (!payment) {
+		return false; // Оплата не выбрана
+	}
+	if (payment !== 'card' && payment !== 'cash') {
+		console.error('Недопустимый способ оплаты: ' + payment);
+		return false; // Недопустимый способ оплаты
+	}
+	return true;
+}
 
 eventManager.on(
 	/^contacts\..*:change/,
@@ -233,10 +256,20 @@ eventManager.on(
 	(errors: Partial<OrderContactsInterface>) => {
 		const { email, phone } = errors;
 		uiComponents.contactForm.valid = !email && !phone;
+
 		uiComponents.contactForm.errors = Object.entries(errors)
 			.filter(([, value]) => !!value)
-			.map(([key]) => key)
-			.join(', ');
+			.map(([key]) => {
+				switch (key) {
+					case 'email':
+						return 'Ошибка: некорректный адрес электронной почты. Пожалуйста, введите действующий email.';
+					case 'phone':
+						return 'Ошибка: номер телефона не указан или неверен. Пожалуйста, введите правильный номер телефона.';
+					default:
+						return 'Неизвестная ошибка. Проверьте введенные данные и попробуйте снова.';
+				}
+			})
+			.join('; ');
 	}
 );
 

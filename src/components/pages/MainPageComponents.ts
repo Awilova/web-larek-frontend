@@ -4,23 +4,23 @@ import { Component as BaseComponent } from '../base/Component';
 import { IEvents as IEventsInterface } from '../base/events';
 
 
-export class Page extends BaseComponent<IPageDataInterface> {
-	protected _counter: HTMLElement | null;
-	protected _catalog: HTMLElement | null;
-	protected _wrapper: HTMLElement | null;
-	protected _basket: HTMLElement | null;
+export class MainPageComponents extends BaseComponent<IPageDataInterface> {
+	protected counterElement: HTMLElement | null;
+	protected catalogList: HTMLElement | null;
+	protected wrapperPage: HTMLElement | null;
+	protected basketElement: HTMLElement | null;
 
 	constructor(container: HTMLElement, protected events: IEventsInterface) {
 		super(container);
 
-		this._basket = getElementFromUtils<HTMLElement>('.header__basket', container) as HTMLElement | null;
-		this._counter = getElementFromUtils<HTMLElement>('.header__basket-counter', container) as HTMLElement | null;
-		this._catalog = getElementFromUtils<HTMLElement>('.gallery', container) as HTMLElement | null;
-		this._wrapper = getElementFromUtils<HTMLElement>('.page__wrapper', container) as HTMLElement | null;
+		this.basketElement = getElementFromUtils<HTMLElement>('.header__basket', container) as HTMLElement | null;
+		this.counterElement = getElementFromUtils<HTMLElement>('.header__basket-counter', container) as HTMLElement | null;
+		this.catalogList = getElementFromUtils<HTMLElement>('.gallery', container) as HTMLElement | null;
+		this.wrapperPage = getElementFromUtils<HTMLElement>('.page__wrapper', container) as HTMLElement | null;
 
 
-		if (this._basket) {
-			this._basket.addEventListener('click', this.handleBasketClick.bind(this));
+		if (this.basketElement) {
+			this.basketElement.addEventListener('click', this.handleBasketClick.bind(this));
 		}
 	}
 
@@ -30,20 +30,22 @@ export class Page extends BaseComponent<IPageDataInterface> {
 		}
 	}
 
-	set counter(value: number) {
-		if (this._counter) {
-			this.setText(this._counter, String(value));
-		}
-	}
 	set catalog(items: HTMLElement[]) {
-		if (this._catalog) {
-			this._catalog.replaceChildren(...items);
+		if (this.catalogList) {
+			this.catalogList.replaceChildren(...items);
 		}
 	}
 
+	set counter(value: number) {
+		if (this.counterElement) {
+			this.counterElement.textContent= String(value);
+		}
+	}
+	
+
 	set locked(value: boolean) {
-		if (this._wrapper) {
-			this._wrapper.classList.toggle('page__wrapper_locked', value);
+		if (this.wrapperPage) {
+			this.wrapperPage.classList.toggle('page__wrapper_locked', value);
 		}
 	}
 }

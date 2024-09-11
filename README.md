@@ -44,27 +44,27 @@ yarn build
 
 "Web-Larek" использует интерфейсы для определения структуры данных и взаимодействий в приложении.
 
-### `ITotalItems<T>`
+### `ITotalElementsList<T>`
 Представляет общее количество элементов и их список.
 
 - **Поля:**
   - `total: number` — Общее количество элементов.
   - `items: T[]` — Массив элементов.
 
-### `IBasketCard`
+### `ICartElementData`
 Описывает отдельный товар в корзине.
 
 - **Поля:**
   - `title: string` — Название товара.
   - `price: number` — Цена товара.
 
-### `ILarekApi`
+### `ProductApiService`
 Определяет методы API для работы с товарами и заказами.
 
 - **Методы:**
-  - `getProductList(): Promise<IProduct[]>` — Получает список товаров.
   - `getProductItem(id: string): Promise<IProduct>` — Получает информацию о товаре по ID.
-  - `orderProduct(order: IOrderForm): Promise<IOrderResult>` — Отправляет данные заказа на сервер.
+  - `getProductList(): Promise<IProduct[]>` — Получает список товаров.
+  - `orderProduct(order: OrderForm): Promise<IOrderResult>` — Отправляет данные заказа на сервер.
 
 ### `IModal`
 Управляет отображением модальных окон.
@@ -78,13 +78,14 @@ yarn build
 - **Поля:**
   - `id: string` — Уникальный идентификатор.
   - `description: string` — Описание товара.
+  - `image?: string` — URL изображения.
   - `index?: number` — Порядковый номер (опционально).
-  - `image?: string` — URL изображения (опционально).
   - `title: string` — Название.
   - `category: string` — Категория.
   - `price: number | null` — Цена.
+  - `button?: string` - кнопка добавить/Удалить.
 
-### `IPageData`
+### `IPageContentConfig`
 Интерфейс страницы, описывающий элементы управления и содержимое.
 
 - **Поля:**
@@ -92,44 +93,44 @@ yarn build
   - `catalog: HTMLElement[]` — Массив элементов каталога.
   - `locked: boolean` — Статус блокировки страницы.
 
-### `IBasketData`
+### `ICartItemData`
 Описывает структуру данных корзины покупок.
 
 - **Поля:**
   - `items: HTMLElement[]` — Список товаров в корзине.
   - `total: number` — Общая стоимость товаров.
 
-### `ISuccess`
+### `IOperationResultSummary`
 Описывает данные для отображения успешного завершения операции.
 
 - **Поля:**
-  - `total: string` — Итоговая сумма.
+  - `total: number` — Итоговая сумма.
 
-### `ISuccessActions`
+### `IOperationHandlers`
 Определяет действия в случае успешного выполнения операции.
 
 - **Поля:**
   - `onClick: () => void` — Функция, вызываемая при клике на элемент.
 
-### `IContactsOrder`
+### `ICustomerDetails`
 Определяет структуру формы для контактных данных.
 
 - **Поля:**
   - `phone: string` — Номер телефона.
   - `email: string` — Электронная почта.
 
-### `IOrderForm`
+### `IFormOrderStructure`
 Описывает форму заказа.
 
 - **Поля:**
-  - `payment: PaymentMethod` - Выбор способа оплаты.
+  - `payment: PaymentOption` - Выбор способа оплаты.
 	- `email: string` - Электронная почта.
 	- `phone: string` - Контактный телефон.
 	- `address: string` - Адрес доставки.
 	- `total: number` - Стоимость выбранных товаров.
 	- `items: string[]` - Выбранные товары.
 
-### `IOrderResult`
+### `IOrderTransactionResult`
 Описывает результат обработки заказа.
 
 - **Поля:**
@@ -164,29 +165,26 @@ yarn build
 
 ## `class EventEmitter`
 
-Класс `EventEmitter` реализует шаблон "Наблюдатель", позволяя компонентам подписываться на события и реагировать на их изменения.
+Класс `EventEmitter` реализует механизм подписки и уведомления об изменениях, что позволяет управлять событиями в приложении.
 
 - **Конструктор:**
   - Инициализирует структуру хранения событий.
 
 - **Методы:**
   - `on(event: EventName, callback: (data: T) => void)` — Подписывает на событие.
-  - `onAll(callback: (event: EmitterEvent) => void)` — Подписывает на все события.
-  - `off(eventName: EventName, callback: Subscriber)` — Отписывает от события.
-  - `offAll(): void` — Удаляет все подписки на события.
   - `emit(event: string, data?: T)` — Инициирует событие.
-  - `trigger(event: string, context?: Partial<T>)` — Создает коллбек-триггер для инициирования события.
+  - `off(eventName: EventName, callback: Subscriber)` — Отписывает от события.
+  - `onAll(callback: (event: EmitterEvent) => void)` — Подписывает на все события.
 
 ## `abstract class Component`
 
-Абстрактный класс `Component` служит основой для всех UI-компонентов, предоставляя базовые методы для работы с DOM.
+Базовый абстрактный класс `Component` предоставляет общую функциональность для всех компонентов пользовательского интерфейса.
 
 - **Конструктор:** 
   - Принимает DOM-элемент, представляющий контейнер компонента.
 
 - **Методы:**
-  - Методы для управления классами, текстом, состоянием и видимостью элементов.
-  - `render(data?: Partial<T>): HTMLElement` — Рендеринг компонента, должен быть переопределен в производных классах.
+  Методы для работы с DOM, такие как `setText`, `setVisible`, `setDisabled`, и `render`.
 
 ## `abstract class Model`
 Абстрактный класс `Model` служит основой для создания моделей данных, управляющих состоянием и взаимодействиями.
@@ -196,6 +194,7 @@ yarn build
 
 - **Методы:**
   - `emitChanges(event: string, payload?: object): void` — Генерирует событие об изменении модели.
+  - `getData(): T` — возвращает текущие данные модели.
 
 
 # Model-View-Presenter (MVP)
@@ -225,8 +224,8 @@ yarn build
   - `formErrors: FormErrors` — Ошибки в форме заказа.
 
 - **Методы:**
-  - `putInBasket(product: Product)` — Добавляет товар в корзину.
   - `deleteFromBasket(product: Product)` — Удаляет товар из корзины.
+  - `putInBasket(product: Product)` — Добавляет товар в корзину.
   - `defaultOrder()` — Инициализирует пустой заказ.
   - `clearBasket()` — Очищает корзину.
   - `getTotal()` — Возвращает общую стоимость товаров в корзине.
@@ -235,6 +234,10 @@ yarn build
   - `checkBasket(item: IProduct)` - проверяет добавление товара в корзину.
   - `setPreview(item: Product)` - Отображает добавленный товар в корзину.
   - `setOrder(): void` — Задает цену и количество товаров в заказе.
+  - `checkPayment(orderPayment: PaymentType): void` - Проверяет выбор способа оплаты.
+  - `checkAddress(orderAddress: string): void` - Проверяет заполнение строки с адресом.
+  - `checkEmail(orderEmail: string): void` - Проверяет заполнение эл. почты.
+  - `checkPhone(orderPhone: string): void` - Проверяет заполнение номера телефона.
   - `validateOrderPayment()` — Валидирует способ оплаты.
   - `validateOrderForm()` — Валидирует поля ввода.
   - `setContactField(field: keyof IContactsOrder, value: string): void` - инициализирует поля контактов.
@@ -259,88 +262,94 @@ yarn build
   - `set catalog(items: HTMLElement[])`: Обновляет каталог товаров.
   - `set locked(value: boolean)`: Блокирует или разблокирует интерфейс.
 
-### `class Card`
-Класс `Card` представляет карточку товара, отображая информацию о товаре и предоставляя интерфейс для взаимодействия.
+### `class ProductCardComponent`
+Класс `ProductCardComponent` представляет карточку товара, отображая информацию о товаре и предоставляя интерфейс для взаимодействия.
 
 - **Поля:**
-  - `_title: HTMLElement` — DOM-элемент для названия товара.
-  - `_category: HTMLElement` — DOM-элемент для категории товара.
-  - `_image: HTMLImageElement` — DOM-элемент для картинки товара.
-  - `_price: HTMLElement` — DOM-элемент для цены товара.
-  - `_description?: HTMLElement` — DOM-элемент для описания товара (опционально).
-  - `_button?: HTMLButtonElement` - Кнопка добавления товара в корзину(опционально).
+  - `categoryElement: HTMLElement` — DOM-элемент для категории товара.
+  - `titleElement: HTMLElement` — DOM-элемент для названия товара.
+  - `imageElement: HTMLImageElement` — DOM-элемент для картинки товара.
+  - `priceElement: HTMLElement` — DOM-элемент для цены товара.
+  - `descriptionElement?: HTMLElement` — DOM-элемент для описания товара (опционально).
+  - `actionButton?: HTMLButtonElement` - Кнопка добавления товара в корзину(опционально).
 
 - **Методы:**
-  - `constructor(blockName: string, container: HTMLElement, actions?: ICardActions)` — Инициализирует карточку товара.
-  - Сеттеры и геттеры для работы с данными карточки.
+  - `set category(value: string)` - устанавливает категорию товара.
+  - `set title(value: string)` — устанавливает название товара.
+  - `set image(value: string)` - устанавливает картинку товара.
+  - `set price(value: number)` — устанавливает цену товара.
+  - `set description(value: string)` — устанавливает описание товара.
+  - `set button(value: string)` - устанавливает текст кнопки.
+  - `get price(): number` - получает цену товара.
 
-### `class Basket`
-Класс `Basket`, унаследованный от `Component` и реализующий `IBasketData`, управляет взаимодействием с корзиной покупок.
+### `class ShoppingBasketComponent`
+Класс `ShoppingBasketComponent`, унаследованный от `Component` и реализующий `IBasketData`, управляет взаимодействием с корзиной покупок.
 
 - **Поля:**
-  - `_itemList: HTMLElement` - DOM-элемент для списка товаров.
-  - `_totalPrice: HTMLElement` - DOM-элемент для общей стоимости товаров.
-  - `_orderButton: HTMLElement` - Кнопка оформления заказа.
+  - `itemListElement: HTMLElement` - DOM-элемент для списка товаров.
+  - `totalPriceElement: HTMLElement` - DOM-элемент для общей стоимости товаров.
+  - `orderButtonElement: HTMLElement` - Кнопка оформления заказа.
 
 - **Методы:**
-  - `set total(total: number)` - Обновляет общую стоимость товаров.
   - `set items(items: HTMLElement[])` - Обновляет список товаров.
+  - `set total(total: number)` - Обновляет общую стоимость товаров.
 
-### `class BasketCard`
-Класс `BasketCard` отвечает за представление товара в корзине, отображая его информацию и обрабатывая события.
+### `class ShoppingBasketCardComponent`
+Класс `ShoppingBasketCardComponent` отвечает за представление товара в корзине, отображая его информацию и обрабатывая события.
 
 - **Поля:**
-  - `_index: HTMLElement` - DOM-элемент для порядкового номера товара.
-  - `_title: HTMLElement` - DOM-элемент для названия товара.
-  - `_button: HTMLElement` - Кнопка для удаления товара.
-  - `_price: HTMLElement` - DOM-элемент для цены товара.
-  
+  - `titleElement: HTMLElement` - DOM-элемент для названия товара.
+  - `priceElement: HTMLElement` - DOM-элемент для цены товара.
+  - `buttonElement: HTMLElement` - Кнопка для удаления товара.
+  - `indexElement: HTMLElement` - DOM-элемент для порядкового номера товара.
+
 - **Методы:**
   - `set title(value: string)` - Устанавливает название товара.
   - `set price(value: number)` - Устанавливает цену товара.
   - `set index(value: number)` - Устанавливает порядковый номер товара.
 
-### `class Modal`
-Класс `Modal` наследует от `Component` и реализует управление модальными окнами.
+### `class ModalComponents`
+Класс `ModalComponents` наследует от `Component` и реализует управление модальными окнами.
 
 - **Поля:**
-  - `content: HTMLElement` — Содержимое модального окна.
-  - `_closeButton: HTMLButtonElement` - Кнопка закрытия модального окна.
+  - `closeButtonElement: HTMLElement` — Содержимое модального окна.
+  - `modalContentElement: HTMLButtonElement` - Кнопка закрытия модального окна.
 
 - **Методы:**
   - `open()` - Открывает модальное окно.
   - `close()` - Закрывает модальное окно.
   - `render(data: IModal)` - Рендерит модальное окно с переданными данными.
+  - `set content(value: HTMLElement)` - Устанавливает DOM элементы модального окна.
 
-### `class Form`
-Класс `Form`, расширяющий `Component` и реализующий `IFormState`, управляет формой заказа.
+### `class BaseFormComponent`
+Класс `BaseFormComponent`, расширяющий `Component` и реализующий `IFormState`, управляет формой заказа.
 
 - **Поля:**
-  - `_submit: HTMLButtonElement` - Кнопка отправки формы.
-  - `_errors: HTMLElement` - Сообщение об ошибках.
+  - `submitButton: HTMLButtonElement` - Кнопка отправки формы.
+  - `errorsForm: HTMLElement` - Сообщение об ошибках.
 
 - **Методы:**
   - `onInputChange(field: keyof T, value: string)` - Обрабатывает изменения в форме.
+  - `set valid(value: boolean)` - Устанавливает валидность для блокировки/разблокировки кнопки.
+  - `set errors(value: string)` - Устанавливает текст ошибки.
   - `render(state: Partial<T> & IFormState)` - Рендерит форму с текущим состоянием.
 
 ### `class OrderForm`
 Класс `OrderForm` представляет форму заказа и управляет её элементами.
 
 - **Поля:**
-  - `container`: Контейнер формы.
-  - `events`: Объект для управления событиями.
+  - `FormButtons: HTMLButtonElement[]`: Кнопки выбора способа оплаты.
 
 - **Методы:**
   - `setButtonClass(name: string): void` — Устанавливает класс активной кнопки.
+  - `set address(address: string)` - Устанавливает адрес доставки товара.
 
-### `class Success`
-Класс `Success` отображает сообщение о завершении заказа.
+### `class SuccessComponent`
+Класс `SuccessComponent` отображает сообщение о завершении заказа.
 
 - **Поля:**
-  - `total: string` — Общая сумма списания.
-
-- **Методы:**
-  - `set total(value: string)` — Устанавливает и отображает сумму списания.
+  - `closeButtonElement` — Кнопка при завершении заказа.
+  - `totalDisplayElement: HTMLElement` - — Общая сумма списания.
 
 ## Presenter (Презентер)
 Презентер управляет взаимодействиями между моделью и представлением, обеспечивая их синхронизацию. В данном проекте роль презентера реализована в файле index.ts.
@@ -365,12 +374,4 @@ yarn build
 - `modal:open` - открытие модального окна;
 - `modal:close` - закрытие модального окна;
 ```
-
-### `class LarekApi`
-`LarekApi` предоставляет методы для работы с API приложения.
-
-- **Методы:**
-  - `getProductList()` — Получает список товаров.
-  - `getProductItem(id: string)` — Получает информацию о товаре по ID.
-  - `orderProduct(order: IOrderForm)` — Отправляет данные заказа на сервер.
 

@@ -47,7 +47,7 @@ export class AppStateModel extends BaseModel<AppStateType> {
 	formErrors: FormErrorsType = {};
 
 	constructor(data: Partial<AppStateType>, events: IEvents) {
-		super(data, events); 
+		super(data, events);
 	}
 
 	deleteFromBasket(id: string): void {
@@ -64,7 +64,6 @@ export class AppStateModel extends BaseModel<AppStateType> {
 		}
 	}
 
-
 	defaultOrder(): void {
 		this.order = {
 			email: '',
@@ -76,29 +75,34 @@ export class AppStateModel extends BaseModel<AppStateType> {
 		};
 	}
 
-	clearBasket(): void {
-		this.basket = [];
-		this.emitChanges('itemBasket:changed');
-		this.defaultOrder();
+	fullBasket(): ProductType[] {
+		return [...this.basket];
 	}
 
 	getTotal(): number {
 		return this.basket.reduce((sum, item) => sum + (item.price ?? 0), 0);
 	}
 
-	setCatalog(items: ProductType[]): void {
-		if (Array.isArray(items)) {
-			this.catalog = items.map((item) => new Product(item, this.events));
-			this.emitChanges('items:changed', { catalog: this.catalog });
-		}
-	}
-
-	fullBasket(): ProductType[] {
-		return [...this.basket];
+	clearBasket(): void {
+		this.basket = [];
+		this.emitChanges('itemBasket:changed');
+		this.defaultOrder();
 	}
 
 	checkBasket(item: ProductType): boolean {
-		return item ? this.basket.some((basketItem) => basketItem.id === item.id) : false;
+		return item
+			? this.basket.some((basketItem) => basketItem.id === item.id)
+			: false;
+	}
+
+	setCatalog(items: ProductType[]): void {
+		if (Array.isArray(items)) {
+			const uniqueItems = Array.from(new Set(items.map((item) => item.id))).map(
+				(id) => items.find((item) => item.id === id) as ProductType
+			);
+			this.catalog = uniqueItems.map((item) => new Product(item, this.events));
+			this.emitChanges('items:changed', { catalog: this.catalog });
+		}
 	}
 
 	setPreview(item: Product): void {
@@ -113,13 +117,13 @@ export class AppStateModel extends BaseModel<AppStateType> {
 		this.order.items = this.fullBasket().map((item) => item.id);
 	}
 
-	checkPayment(orderPayment: PaymentType): void {
-		this.order.payment = orderPayment;
+	checkAddress(orderAddress: string): void {
+		this.order.address = orderAddress;
 		this.validateOrderPayment();
 	}
 
-	checkAddress(orderAddress: string): void {
-		this.order.address = orderAddress;
+	checkPayment(orderPayment: PaymentType): void {
+		this.order.payment = orderPayment;
 		this.validateOrderPayment();
 	}
 
@@ -133,22 +137,11 @@ export class AppStateModel extends BaseModel<AppStateType> {
 		this.validateOrderForm();
 	}
 
-	validateOrderPayment(): boolean {
-		const errors: FormErrorsType = {};
-		if (!this.order.payment) {
-			errors.payment = 'Необходимо указать способ оплаты';
+	setContactField(field: keyof ContactsOrderType, value: string): void {
+		if (field && value) {
+			this.order[field] = value;
+			this.validateOrderForm();
 		}
-		if (!this.order.address) {
-			errors.address = 'Необходимо указать адрес';
-		}
-		this.formErrors = errors;
-
-		if (Object.keys(errors).length > 0) {
-			console.log('Ошибки валидации оплаты или адреса:', errors); // Ошибки только в консоль
-		}
-
-		this.events.emit('formAddresErrors:change', this.formErrors);
-		return Object.keys(errors).length === 0;
 	}
 
 	validateOrderForm(): boolean {
@@ -162,17 +155,28 @@ export class AppStateModel extends BaseModel<AppStateType> {
 		this.formErrors = errors;
 
 		if (Object.keys(errors).length > 0) {
-			console.log('Ошибки валидации контактных данных:', errors); // Ошибки только в консоль
+			console.log('Ошибки валидации контактных данных:', errors);
 		}
 
 		this.events.emit('formContactErrors:change', this.formErrors);
 		return Object.keys(errors).length === 0;
 	}
 
-	setContactField(field: keyof ContactsOrderType, value: string): void {
-		if (field && value) {
-			this.order[field] = value;
-			this.validateOrderForm();
+	validateOrderPayment(): boolean {
+		const errors: FormErrorsType = {};
+		if (!this.order.payment) {
+			errors.payment = 'Необходимо указать способ оплаты';
 		}
+		if (!this.order.address) {
+			errors.address = 'Необходимо указать адрес';
+		}
+		this.formErrors = errors;
+
+		if (Object.keys(errors).length > 0) {
+			console.log('Ошибки валидации оплаты или адреса:', errors);
+		}
+
+		this.events.emit('formAddresErrors:change', this.formErrors);
+		return Object.keys(errors).length === 0;
 	}
 }

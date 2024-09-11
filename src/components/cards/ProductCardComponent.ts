@@ -1,94 +1,97 @@
-import { IProductCardHandlers as CardActionsType, IItemProductStructure as ProductType } from '../../types/index';
-import { Component as BaseComponent } from '../base/Component';
+import { IProductCardHandlers as ProductCardHandlers, IItemProductStructure as ProductType } from '../../types/index';
+import { Component as BaseComponentView } from '../base/Component';
 import { ensureElement as findElement } from '../../utils/utils';
 import { currency, categories } from '../../utils/constants';
 
 
 
-export class ProductCardComponent extends BaseComponent<ProductType> {
-	protected _category: HTMLElement;
-	protected _title: HTMLElement;
-	protected _image: HTMLImageElement;
-	protected _price: HTMLElement;
-	protected _description?: HTMLElement;
-	protected _button?: HTMLButtonElement;
+export class ProductCardComponent extends BaseComponentView<ProductType> {
+	protected categoryElement: HTMLElement;
+	protected titleElement: HTMLElement;
+	protected imageElement: HTMLImageElement;
+	protected priceElement: HTMLElement;
+	protected descriptionElement?: HTMLElement;
+	protected actionButton?: HTMLButtonElement;
 
 	constructor(
-		blockName: string,
-		container: HTMLElement,
-		actions: CardActionsType,
+		blockClassName: string,
+		parentContainer: HTMLElement,
+		handlers: ProductCardHandlers,
 	) {
-		if (!blockName || !container) {
-			throw new Error('Необходимы blockName и container для инициализации Card.');
+		if (!blockClassName || !(parentContainer instanceof HTMLElement)) {
+			throw new Error('Необходимы blockClassName и container для инициализации ProductCardComponent.');
 		}
-		super(container);
+		super(parentContainer);
 
-		this._category = this._findElementSafe<HTMLElement>(`.${blockName}__category`, container);
-		this._title = this._findElementSafe<HTMLElement>(`.${blockName}__title`, container);
-		this._image = this._findElementSafe<HTMLImageElement>(`.${blockName}__image`, container);
-		this._price = this._findElementSafe<HTMLElement>(`.${blockName}__price`, container);
-		this._description = container.querySelector(`.${blockName}__text`) as HTMLElement || null;
-		this._button = container.querySelector(`.${blockName}__button`) as HTMLButtonElement || null;
+		this.categoryElement = this._findElementSafe<HTMLElement>(`.${blockClassName}__category`, parentContainer);
+		this.titleElement = this._findElementSafe<HTMLElement>(`.${blockClassName}__title`, parentContainer);
+		this.imageElement = this._findElementSafe<HTMLImageElement>(`.${blockClassName}__image`, parentContainer);
+		this.priceElement = this._findElementSafe<HTMLElement>(`.${blockClassName}__price`, parentContainer);
+		this.descriptionElement = parentContainer.querySelector(`.${blockClassName}__text`) as HTMLElement || null;
+		this.actionButton = parentContainer.querySelector(`.${blockClassName}__button`) as HTMLButtonElement || null;
 		
 		
-		if (this._button) {
-			this._button.addEventListener('click', actions.onClick);
+		if (this.actionButton) {
+			this.actionButton.addEventListener('click', handlers.onClick);
 		} else {
-			if (container) {
-				container.addEventListener('click', actions.onClick);
+			if (parentContainer) {
+				parentContainer.addEventListener('click', handlers.onClick);
 			}
 		}
 	}
 
 	set category(value: string) {
 		if (value) {
-			this._setText(this._category, value);
+			this._setText(this.categoryElement, value, 'категория');
 			const category = categories[value] || '';
 			if (category) {
-				this._category.classList.add('card__category' + category);
+				this.categoryElement.classList.add('card__category' + category);
 			}
 		}
 	}
 	set title(value: string) {
 		if (value) {
-			this._setText(this._title, value);
+			this._setText(this.titleElement, value, 'наименование товара');
 		}
 	}
 
 	set image(value: string) {
-		if (value && this._title.textContent) {
-			this._setImage(this._image, value, this._title.textContent);
+		if (value && this.titleElement.textContent) {
+			this._setImage(this.imageElement, value, this.titleElement.textContent);
 		}
 	}
 
 	set price(value: number) {
 		if (value == null || isNaN(value)) {
-			this._setText(this._price, 'Бесценно');
-			this._disableButton();
+			this._setText(this.priceElement, 'Бесценно', 'цена');
+			this._disableActionButton();
 		} else {
-			this._setText(this._price, `${value} ${currency}`);
+			this._setText(this.priceElement, `${value} ${currency}`, 'цена');
+			this._enableActionButton();
 		}
 	}
 	set description(value: string) {
-		if (value && this._description) {
-			this._setText(this._description, value);
+		if (value && this.descriptionElement) {
+			this._setText(this.descriptionElement, value, 'описание');
 		}
 	}
 
 	set button(value: string) {
-		if (this._button && value) {
-			this._setText(this._button, value);
+		if (this.actionButton && value) {
+			this._setText(this.actionButton, value, 'кнопка');
 		}
 	}
 
 	get price(): number {
-		return Number(this._price.textContent ?? '');
+		return Number(this.priceElement.textContent ?? '');
 	}
 
 	// Вспомогательные методы
-	private _setText(element: HTMLElement, text: string): void {
+	private _setText(element: HTMLElement | null, text: string, elementName: string): void {
 		if (element && text !== undefined) {
 			element.textContent = text;
+		} else {
+			console.warn(`Элемент ${elementName} не найден. Проверьте разметку.`);
 		}
 	}
 
@@ -99,12 +102,6 @@ export class ProductCardComponent extends BaseComponent<ProductType> {
 		}
 	}
 
-	private _disableButton(): void {
-		if (this._button) {
-			this._button.setAttribute('disabled', 'disabled');
-		}
-	}
-
 	private _findElementSafe<T extends HTMLElement>(selector: string, context: HTMLElement): T {
 		const element = findElement<T>(selector, context);
 		if (!element) {
@@ -112,4 +109,17 @@ export class ProductCardComponent extends BaseComponent<ProductType> {
 		}
 		return element;
 	}
+
+	private _disableActionButton(): void {
+		if (this.actionButton) {
+			this.actionButton.setAttribute('disabled', 'disabled');
+		}
+	}
+
+	private _enableActionButton(): void {
+		if (this.actionButton) {
+			this.actionButton.removeAttribute('disabled');
+		}
+	}
+
 }

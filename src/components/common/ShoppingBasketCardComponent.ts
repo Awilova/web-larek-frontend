@@ -5,10 +5,10 @@ import { ensureElement as findElement } from '../../utils/utils';
 import { currency } from '../../utils/constants';
 
 export class ShoppingBasketCardComponent extends BaseComponent<BasketItemType> {
-	protected _title: HTMLElement;
-	protected _price: HTMLElement;
-	protected _button: HTMLButtonElement;
-	protected _index: HTMLElement;
+	protected titleElement: HTMLElement;
+	protected priceElement: HTMLElement;
+	protected buttonElement: HTMLButtonElement;
+	protected indexElement: HTMLElement;
 
 	constructor(idx: number, container: HTMLElement, events: CardActionsInterface) {
 		if (typeof idx !== 'number' || !(container instanceof HTMLElement) || !events) {
@@ -16,35 +16,35 @@ export class ShoppingBasketCardComponent extends BaseComponent<BasketItemType> {
 		}
 		super(container);
 
-		this._title = this._findElementSafe<HTMLElement>('.card__title', container);
-		this._price = this._findElementSafe<HTMLElement>('.card__price', container);
-		this._button = this._findElementSafe<HTMLButtonElement>('.card__button', container);
-		this._index = this._findElementSafe<HTMLElement>('.basket__item-index', container);
+		this.titleElement = this._findElementSafe<HTMLElement>('.card__title', container);
+		this.priceElement = this._findElementSafe<HTMLElement>('.card__price', container);
+		this.buttonElement = this._findElementSafe<HTMLButtonElement>('.card__button', container);
+		this.indexElement = this._findElementSafe<HTMLElement>('.basket__item-index', container);
 
 		
 		this.index = (idx + 1).toString();
-		this._button.addEventListener('click', (event) => events.onClick(event));
+		this.buttonElement.addEventListener('click', (event) => events.onClick(event));
 	}
 
 	set title(value: string) {
 		if (!value || typeof value !== 'string') {
 			throw new Error('Передано некорректное название товара.');
 		}
-		this._setText(this._title, value);
+		this._setText(this.titleElement, value);
 	}
 
 	set price(value: number) {
 		if (isNaN(value) || value < 0) {
 			throw new Error('Цена товара должна быть положительным числом.');
 		}
-		this._setText(this._price, value + ' ' + currency);
+		this._setText(this.priceElement, value + ' ' + currency);
 	}
 
 	set index(value: string) { 
 		if (!value || typeof value !== 'string' || isNaN(Number(value)) || Number(value) <= 0) {
 			throw new Error('Индекс должен быть строковым представлением положительного числа.');
 		}
-		this._setText(this._index, value);
+		this._setText(this.indexElement, value);
 	}
 
 // Приватные методы для поиска товара и установки значения

@@ -4,45 +4,63 @@ import { Component } from '../base/Component';
 import { IEvents } from '../base/events';
 
 
-export class Modal extends Component<IModalPopup> {
-	protected _closeButton: HTMLButtonElement;
-	protected _content: HTMLElement;
+export class ModalComponents extends Component<IModalPopup> {
+	protected closeButtonElement: HTMLButtonElement;
+	protected modalContentElement: HTMLElement;
 
-	constructor(container: HTMLElement, protected events: IEvents) {
+	constructor(container: HTMLElement, protected eventHandlers: IEvents) {
+
+		if (!(container instanceof HTMLElement)) {
+			throw new Error('Передан некорректный контейнер для PopupModal.');
+		}
+		if (!eventHandlers) {
+			throw new Error('Event handlers не переданы в конструктор PopupModal.');
+		}
+
 		super(container);
 
-		this._closeButton = ensureElement<HTMLButtonElement>(
+		this.close = this.close.bind(this);
+		this._closeHandler = this._closeHandler.bind(this);
+
+		this.closeButtonElement = ensureElement<HTMLButtonElement>(
 			'.modal__close',
 			container
 		);
-		this._content = ensureElement<HTMLElement>('.modal__content', container);
+		this.modalContentElement = ensureElement<HTMLElement>('.modal__content', container);
 
-		this._closeButton.addEventListener('click', this.close.bind(this));
-		this.container.addEventListener('click', this.close.bind(this));
-
-		this._content.addEventListener('click', (event) => event.stopPropagation());
+		this._attachEventListeners();
 	}
 
-	set content(value: HTMLElement) {
-		this._content.replaceChildren(value);
-	}
 
 	open() {
 		this.container.classList.toggle('modal_active', true);
-		this.events.emit('modal:open');
+		this.eventHandlers.emit('modal:open');
 	}
 
 	close() {
 		this.container.classList.toggle('modal_active', false);
-		this._content.textContent = '';
-		this.events.emit('modal:close');
+		this.modalContentElement.textContent = '';
+		this.eventHandlers.emit('modal:close');
 	}
 
-
+	set content(value: HTMLElement) {
+		this.modalContentElement.replaceChildren(value);
+	}
+	
 	render(data: IModalPopup): HTMLElement {
 		super.render(data);
 		this.open();
 		return this.container;
+	}
+
+	private _attachEventListeners(): void {
+		this.closeButtonElement.addEventListener('click', this.close);
+		this.container.addEventListener('click', this.close);
+		this.modalContentElement.addEventListener('click', (event) => event.stopPropagation());
+	}
+
+	private _closeHandler() {
+		this.close();
 	}
 }
 
