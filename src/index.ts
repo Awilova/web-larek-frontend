@@ -21,7 +21,7 @@ import {
 	PaymentOption as PaymentType,
 	IOrderDeliveryDetails as OrderAddressInterface,
 } from './types';
-import { ContactsOrder as OrderContacts } from './components/state/ContactOrderComponent';
+import { ContactsOrder as OrderContacts } from './components/form/ContactOrderComponent';
 import { OrderForm as OrderFormComponent } from './components/form/OrderFormComponent';
 import { SuccessComponent as SuccessModal } from './components/common/SuccessModalComponent';
 
@@ -209,7 +209,7 @@ function openContactsForm() {
 }
 
 eventManager.on(
-	'formAddresErrors:change',
+	'formAddressErrors:change',
 	(errors: Partial<OrderAddressInterface>) => {
 		const { payment, address } = errors;
 		uiComponents.orderForm.valid =
@@ -235,11 +235,11 @@ eventManager.on(
 
 function validatePaymentOption(payment: PaymentType | null): boolean {
 	if (!payment) {
-		return false; // Оплата не выбрана
+		return false;
 	}
 	if (payment !== 'card' && payment !== 'cash') {
 		console.error('Недопустимый способ оплаты: ' + payment);
-		return false; // Недопустимый способ оплаты
+		return false;
 	}
 	return true;
 }
@@ -256,7 +256,6 @@ eventManager.on(
 	(errors: Partial<OrderContactsInterface>) => {
 		const { email, phone } = errors;
 		uiComponents.contactForm.valid = !email && !phone;
-
 		uiComponents.contactForm.errors = Object.entries(errors)
 			.filter(([, value]) => !!value)
 			.map(([key]) => {
@@ -269,7 +268,7 @@ eventManager.on(
 						return 'Неизвестная ошибка. Проверьте введенные данные и попробуйте снова.';
 				}
 			})
-			.join('; ');
+			.join(', ');
 	}
 );
 

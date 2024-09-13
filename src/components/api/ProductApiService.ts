@@ -10,7 +10,6 @@ import {
 export class ProductApiService extends BaseApi implements ProductApiInterface {
 	readonly cdn: string;
 
-
 	constructor(cdn: string, baseUrl: string, options?: RequestInit) {
 		if (!cdn || !baseUrl) {
 			throw new Error(
@@ -33,17 +32,17 @@ export class ProductApiService extends BaseApi implements ProductApiInterface {
 
 	getProductItem(id: string): Promise<Product> {
 		return this.get(`/product/${id}`).then((productData) => {
-			const product = productData as Product; 
+			const product = productData as Product;
 			return {
 				...product,
-				image: `${this.cdn}${product.image}`, 
+				image: `${this.cdn}${product.image}`,
 			};
 		});
 	}
 
 	orderProduct(order: OrderForm): Promise<OrderResult> {
 		return this.post('/order', order).then((response) => {
-			const result = response as OrderResult; 
+			const result = response as OrderResult;
 			return result;
 		});
 	}

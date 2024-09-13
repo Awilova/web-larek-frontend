@@ -1,4 +1,4 @@
-import { BaseFormComponent as BaseForm } from '../form/BaseFormComponent';
+import { BaseFormComponent as BaseForm } from './BaseFormComponent';
 import { ICustomerDetails as ContactsOrderType } from '../../types';
 import { IEvents as EventsInterface } from '../base/events';
 

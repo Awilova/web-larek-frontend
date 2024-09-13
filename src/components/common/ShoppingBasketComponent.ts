@@ -34,10 +34,10 @@ export class ShoppingBasketComponent extends Component<ICartItemData> {
 
 	set items(items: HTMLElement[]) {
 		if (items.length) {
-			this.itemListElement.append(...items);
+			this.itemListElement.replaceChildren(...items);
 			this.setDisabled(this.orderButtonElement, false);
 		} else {
-			this.itemListElement.append(
+			this.itemListElement.replaceChildren(
 				createElement<HTMLParagraphElement>('p', {
 					textContent: 'Корзина пуста',
 				})
@@ -50,7 +50,7 @@ export class ShoppingBasketComponent extends Component<ICartItemData> {
 		if (isNaN(total) || total < 0) {
 			throw new Error('Стоимость корзины должна быть положительным числом.');
 		}
-		
+
 		this.totalPriceElement.textContent = total.toLocaleString() + currency;
 	}
 }

@@ -3,11 +3,13 @@
 Стек: HTML, SCSS, TS, Webpack
 
 Структура проекта:
+
 - src/ — исходные файлы проекта
 - src/components/ — папка с JS компонентами
 - src/components/base/ — папка с базовым кодом
 
 Важные файлы:
+
 - src/pages/index.html — HTML-файл главной страницы
 - src/types/index.ts — файл с типами
 - src/index.ts — точка входа приложения
@@ -16,6 +18,7 @@
 - src/utils/utils.ts — файл с утилитами
 
 ## Установка и запуск
+
 Для установки и запуска проекта необходимо выполнить команды
 
 ```
@@ -29,6 +32,7 @@ npm run start
 yarn
 yarn start
 ```
+
 ## Сборка
 
 ```
@@ -40,11 +44,13 @@ npm run build
 ```
 yarn build
 ```
+
 ## Данные и типы данных используемые в приложении
 
 "Web-Larek" использует интерфейсы для определения структуры данных и взаимодействий в приложении.
 
 ### `ITotalElementsList<T>`
+
 Представляет общее количество элементов и их список.
 
 - **Поля:**
@@ -52,6 +58,7 @@ yarn build
   - `items: T[]` — Массив элементов.
 
 ### `ICartElementData`
+
 Описывает отдельный товар в корзине.
 
 - **Поля:**
@@ -59,6 +66,7 @@ yarn build
   - `price: number` — Цена товара.
 
 ### `ProductApiService`
+
 Определяет методы API для работы с товарами и заказами.
 
 - **Методы:**
@@ -67,12 +75,14 @@ yarn build
   - `orderProduct(order: OrderForm): Promise<IOrderResult>` — Отправляет данные заказа на сервер.
 
 ### `IModal`
+
 Управляет отображением модальных окон.
 
 - **Поля:**
   - `content: HTMLElement` — Содержимое модального окна.
 
 ### `IProduct`
+
 Описывает структуру данных товара в каталоге.
 
 - **Поля:**
@@ -86,6 +96,7 @@ yarn build
   - `button?: string` - кнопка добавить/Удалить.
 
 ### `IPageContentConfig`
+
 Интерфейс страницы, описывающий элементы управления и содержимое.
 
 - **Поля:**
@@ -94,6 +105,7 @@ yarn build
   - `locked: boolean` — Статус блокировки страницы.
 
 ### `ICartItemData`
+
 Описывает структуру данных корзины покупок.
 
 - **Поля:**
@@ -101,18 +113,21 @@ yarn build
   - `total: number` — Общая стоимость товаров.
 
 ### `IOperationResultSummary`
+
 Описывает данные для отображения успешного завершения операции.
 
 - **Поля:**
   - `total: number` — Итоговая сумма.
 
 ### `IOperationHandlers`
+
 Определяет действия в случае успешного выполнения операции.
 
 - **Поля:**
   - `onClick: () => void` — Функция, вызываемая при клике на элемент.
 
 ### `ICustomerDetails`
+
 Определяет структуру формы для контактных данных.
 
 - **Поля:**
@@ -120,25 +135,27 @@ yarn build
   - `email: string` — Электронная почта.
 
 ### `IFormOrderStructure`
+
 Описывает форму заказа.
 
 - **Поля:**
   - `payment: PaymentOption` - Выбор способа оплаты.
-	- `email: string` - Электронная почта.
-	- `phone: string` - Контактный телефон.
-	- `address: string` - Адрес доставки.
-	- `total: number` - Стоимость выбранных товаров.
-	- `items: string[]` - Выбранные товары.
+  - `email: string` - Электронная почта.
+  - `phone: string` - Контактный телефон.
+  - `address: string` - Адрес доставки.
+  - `total: number` - Стоимость выбранных товаров.
+  - `items: string[]` - Выбранные товары.
 
 ### `IOrderTransactionResult`
+
 Описывает результат обработки заказа.
 
 - **Поля:**
   - `id: string` — Идентификатор заказа.
   - `total: number` — Итоговая сумма заказа.
 
-
 # Архитектура приложения
+
 ```
 
 Проект построен на основе архитектурного шаблона Model-View-Presenter (MVP), что позволяет разделить логику приложения и его интерфейс, создавая устойчивую и легко расширяемую структуру.
@@ -155,6 +172,7 @@ yarn build
 Класс `Api` предоставляет основные возможности для выполнения HTTP-запросов к серверу.
 
 - **Конструктор:**
+
   - `baseUrl: string` — Базовый URL для API запросов.
   - `options: RequestInit` — Настройки запросов по умолчанию.
 
@@ -168,6 +186,7 @@ yarn build
 Класс `EventEmitter` реализует механизм подписки и уведомления об изменениях, что позволяет управлять событиями в приложении.
 
 - **Конструктор:**
+
   - Инициализирует структуру хранения событий.
 
 - **Методы:**
@@ -180,29 +199,33 @@ yarn build
 
 Базовый абстрактный класс `Component` предоставляет общую функциональность для всех компонентов пользовательского интерфейса.
 
-- **Конструктор:** 
+- **Конструктор:**
+
   - Принимает DOM-элемент, представляющий контейнер компонента.
 
 - **Методы:**
   Методы для работы с DOM, такие как `setText`, `setVisible`, `setDisabled`, и `render`.
 
 ## `abstract class Model`
+
 Абстрактный класс `Model` служит основой для создания моделей данных, управляющих состоянием и взаимодействиями.
 
 - **Конструктор:**
+
   - `constructor(data: Partial<T>, protected events: IEvents)` - Инициализирует модель данными и событийному менеджеру.
 
 - **Методы:**
   - `emitChanges(event: string, payload?: object): void` — Генерирует событие об изменении модели.
   - `getData(): T` — возвращает текущие данные модели.
 
-
 # Model-View-Presenter (MVP)
 
 ## Модель (Model)
+
 Компоненты модели данных
 
 ### `class Product`
+
 Класс `Product` представляет модель товара и наследует от абстрактного класса `Model`. Он включает специфические для товара свойства и методы.
 
 - **Поля:**
@@ -214,9 +237,11 @@ yarn build
   - `price: number | null` — Цена товара.
 
 ### `class AppStateModel`
+
 Класс `AppStateModel`, расширяющий `Model` и реализующий интерфейс `IAppState`, управляет глобальным состоянием приложения.
 
 - **Поля:**
+
   - `basket: Product[]` — Список товаров в корзине.
   - `catalog: Product[]` — Полный каталог товаров.
   - `order: IOrderForm` — Текущий заказ.
@@ -243,15 +268,15 @@ yarn build
   - `setContactField(field: keyof IContactsOrder, value: string): void` - инициализирует поля контактов.
 
 ## View (Представление)
+
 Компоненты представления
 
-### `class ContactsOrder`
-Класс `ContactsOrder` расширяет `Form` и добавляет методы для управления контактными данными.
-
 ### `class Page`
+
 Класс `Page` управляет основными элементами интерфейса, включая счётчик товаров, каталог и блокировку страницы.
 
 - **Поля:**
+
   - `counter`: Обновляет количество товаров в корзине.
   - `catalog`: Обновляет и отображает товары в каталоге.
   - `locked`: Управляет блокировкой интерфейса.
@@ -263,9 +288,11 @@ yarn build
   - `set locked(value: boolean)`: Блокирует или разблокирует интерфейс.
 
 ### `class ProductCardComponent`
+
 Класс `ProductCardComponent` представляет карточку товара, отображая информацию о товаре и предоставляя интерфейс для взаимодействия.
 
 - **Поля:**
+
   - `categoryElement: HTMLElement` — DOM-элемент для категории товара.
   - `titleElement: HTMLElement` — DOM-элемент для названия товара.
   - `imageElement: HTMLImageElement` — DOM-элемент для картинки товара.
@@ -283,9 +310,11 @@ yarn build
   - `get price(): number` - получает цену товара.
 
 ### `class ShoppingBasketComponent`
+
 Класс `ShoppingBasketComponent`, унаследованный от `Component` и реализующий `IBasketData`, управляет взаимодействием с корзиной покупок.
 
 - **Поля:**
+
   - `itemListElement: HTMLElement` - DOM-элемент для списка товаров.
   - `totalPriceElement: HTMLElement` - DOM-элемент для общей стоимости товаров.
   - `orderButtonElement: HTMLElement` - Кнопка оформления заказа.
@@ -295,9 +324,11 @@ yarn build
   - `set total(total: number)` - Обновляет общую стоимость товаров.
 
 ### `class ShoppingBasketCardComponent`
+
 Класс `ShoppingBasketCardComponent` отвечает за представление товара в корзине, отображая его информацию и обрабатывая события.
 
 - **Поля:**
+
   - `titleElement: HTMLElement` - DOM-элемент для названия товара.
   - `priceElement: HTMLElement` - DOM-элемент для цены товара.
   - `buttonElement: HTMLElement` - Кнопка для удаления товара.
@@ -309,9 +340,11 @@ yarn build
   - `set index(value: number)` - Устанавливает порядковый номер товара.
 
 ### `class ModalComponents`
+
 Класс `ModalComponents` наследует от `Component` и реализует управление модальными окнами.
 
 - **Поля:**
+
   - `closeButtonElement: HTMLElement` — Содержимое модального окна.
   - `modalContentElement: HTMLButtonElement` - Кнопка закрытия модального окна.
 
@@ -322,9 +355,11 @@ yarn build
   - `set content(value: HTMLElement)` - Устанавливает DOM элементы модального окна.
 
 ### `class BaseFormComponent`
+
 Класс `BaseFormComponent`, расширяющий `Component` и реализующий `IFormState`, управляет формой заказа.
 
 - **Поля:**
+
   - `submitButton: HTMLButtonElement` - Кнопка отправки формы.
   - `errorsForm: HTMLElement` - Сообщение об ошибках.
 
@@ -335,16 +370,24 @@ yarn build
   - `render(state: Partial<T> & IFormState)` - Рендерит форму с текущим состоянием.
 
 ### `class OrderForm`
+
 Класс `OrderForm` представляет форму заказа и управляет её элементами.
 
 - **Поля:**
+
   - `FormButtons: HTMLButtonElement[]`: Кнопки выбора способа оплаты.
 
 - **Методы:**
+
   - `setButtonClass(name: string): void` — Устанавливает класс активной кнопки.
   - `set address(address: string)` - Устанавливает адрес доставки товара.
 
+### `class ContactsOrder`
+
+  Класс `ContactsOrder` расширяет `Form` и добавляет методы для управления контактными данными.
+
 ### `class SuccessComponent`
+
 Класс `SuccessComponent` отображает сообщение о завершении заказа.
 
 - **Поля:**
@@ -352,6 +395,7 @@ yarn build
   - `totalDisplayElement: HTMLElement` - — Общая сумма списания.
 
 ## Presenter (Презентер)
+
 Презентер управляет взаимодействиями между моделью и представлением, обеспечивая их синхронизацию. В данном проекте роль презентера реализована в файле index.ts.
 
 ```
@@ -374,4 +418,3 @@ yarn build
 - `modal:open` - открытие модального окна;
 - `modal:close` - закрытие модального окна;
 ```
-

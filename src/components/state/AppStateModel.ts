@@ -98,7 +98,7 @@ export class AppStateModel extends BaseModel<AppStateType> {
 	setCatalog(items: ProductType[]): void {
 		if (Array.isArray(items)) {
 			const uniqueItems = Array.from(new Set(items.map((item) => item.id))).map(
-				(id) => items.find((item) => item.id === id) as ProductType
+				(id) => items.find((item) => item.id === id)
 			);
 			this.catalog = uniqueItems.map((item) => new Product(item, this.events));
 			this.emitChanges('items:changed', { catalog: this.catalog });
@@ -138,10 +138,8 @@ export class AppStateModel extends BaseModel<AppStateType> {
 	}
 
 	setContactField(field: keyof ContactsOrderType, value: string): void {
-		if (field && value) {
-			this.order[field] = value;
-			this.validateOrderForm();
-		}
+		this.order[field] = value;
+		this.validateOrderForm();
 	}
 
 	validateOrderForm(): boolean {
@@ -176,7 +174,7 @@ export class AppStateModel extends BaseModel<AppStateType> {
 			console.log('Ошибки валидации оплаты или адреса:', errors);
 		}
 
-		this.events.emit('formAddresErrors:change', this.formErrors);
+		this.events.emit('formAddressErrors:change', this.formErrors);
 		return Object.keys(errors).length === 0;
 	}
 }
